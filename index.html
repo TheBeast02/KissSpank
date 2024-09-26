@@ -10,6 +10,7 @@
         button { font-size: 20px; padding: 15px; margin: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; }
         button:hover { background-color: #45a049; }
         .emoji { font-size: 100px; display: none; }
+        p { font-size: 24px; }
     </style>
 </head>
 <body>
@@ -17,21 +18,33 @@
     <p>Click the buttons to start the game!</p>
     <button id="kiss-btn" onclick="showKiss()">Kiss</button>
     <button id="spank-btn" onclick="showSpank()">Spank</button>
-    
+
     <div id="emoji-container">
         <span id="kiss-emoji" class="emoji">❤️</span>
         <span id="spank-emoji" class="emoji">👋</span>
     </div>
 
+    <p>Kiss Count: <span id="kiss-count">0</span></p>
+    <p>Spank Count: <span id="spank-count">0</span></p>
+
+    <a href="your_next_page.html">Click here for a surprise!</a>
+
     <script>
+        let kissCount = 0;
+        let spankCount = 0;
+
         function showKiss() {
             document.getElementById("kiss-emoji").style.display = "block";
             document.getElementById("spank-emoji").style.display = "none";
+            kissCount++;
+            document.getElementById("kiss-count").innerText = kissCount;
         }
         
         function showSpank() {
             document.getElementById("spank-emoji").style.display = "block";
             document.getElementById("kiss-emoji").style.display = "none";
+            spankCount++;
+            document.getElementById("spank-count").innerText = spankCount;
         }
     </script>
 </body>
