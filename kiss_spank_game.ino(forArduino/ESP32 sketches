@@ -1,0 +1,106 @@
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* ssid = "LAPTOP-HN13EA9S 5079";   // Your laptop hotspot name
+const char* password = "123456789";          // Your laptop hotspot password
+
+WebServer server(80);
+
+int ledPin = 2;    // Pin connected to LED
+int kissCount = 0; // Counter for kisses
+int spankCount = 0; // Counter for spanks
+String interactionLog = ""; // Log of interactions
+
+// Generate the HTML page with counts
+String generatePage() {
+  String html = "<!DOCTYPE html><html lang='en'>";
+  html += "<head><meta name='viewport' content='width=device-width, initial-scale=1.0'>";
+  html += "<style>";
+  html += "body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f0f8ff; }";
+  html += "button { font-size: 20px; padding: 15px; margin: 10px; width: 100%; background-color: #4CAF50; color: white; border: none; border-radius: 5px; }";
+  html += "button:hover { background-color: #45a049; }";
+  html += "h1, h2 { color: #333; }";
+  html += "p { font-size: 24px; }";
+  html += "#kissy, #spankHand { display: none; font-size: 40px; margin: 20px; }";
+  html += "</style>";
+  html += "</head>";
+  html += "<body>";
+  
+  // Title and Counters
+  html += "<h1>Nana & Papa's Kissing Game</h1>";
+  html += "<p>Kiss Count: " + String(kissCount) + "</p>";
+  html += "<p>Spank Count: " + String(spankCount) + "</p>";
+  
+  // Kiss and Spank Buttons
+  html += "<form action='/kiss' method='get'><button onclick='showKissy()'>Kiss</button></form>";
+  html += "<form action='/spank' method='get'><button onclick='showSpankHand()'>Spank</button></form>";
+  
+  // Interaction log
+  html += "<h3>Interaction Log:</h3><p>" + interactionLog + "</p>";
+  
+  // Thank You message after 10 kisses
+  if (kissCount >= 10) {
+    html += "<h2>Thank you! We love you! ❤️</h2>";
+  }
+  
+  // Kissy and Spank Hand Graphics
+  html += "<p id='kissy'>😘</p><p id='spankHand'>✋</p>";
+
+  // Sound effects
+  html += "<audio id='kissSound' src='https://www.soundjay.com/human/kiss-2.mp3'></audio>";
+  html += "<audio id='spankSound' src='https://www.soundjay.com/human/slap.mp3'></audio>";
+
+  // JavaScript for sound, graphics, and preventing redirect
+  html += "<script>";
+  html += "function showKissy() { document.getElementById('kissy').style.display = 'block'; document.getElementById('kissSound').play(); setTimeout(function() { document.getElementById('kissy').style.display = 'none'; }, 500); }";
+  html += "function showSpankHand() { document.getElementById('spankHand').style.display = 'block'; document.getElementById('spankSound').play(); setTimeout(function() { document.getElementById('spankHand').style.display = 'none'; }, 500); }";
+  html += "</script>";
+  
+  html += "</body></html>";
+  return html;
+}
+
+void handleRoot() {
+  server.send(200, "text/html", generatePage());
+}
+
+void handleKiss() {
+  kissCount++;
+  digitalWrite(ledPin, HIGH); // Turn on LED for fun effect
+  interactionLog += "Kiss given! ";
+  server.send(200, "text/html", generatePage()); // Stay on the same page
+}
+
+void handleSpank() {
+  spankCount++;
+  digitalWrite(ledPin, LOW);  // Turn off LED for fun effect
+  interactionLog += "Spank given! ";
+  server.send(200, "text/html", generatePage()); // Stay on the same page
+}
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println(WiFi.localIP());
+
+  // Start the server
+  server.on("/", handleRoot);
+  server.on("/kiss", handleKiss);
+  server.on("/spank", handleSpank);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}
